@@ -8,3 +8,7 @@ The process:
 3. Use BeautifulSoup to parse the website's HTML.
 4. Extract data.
 
+# The Challenge
+The above process is to retrieve stock data for a single ticker. The autonomous stock trading bot will need access to data for multiple stocks (ie. the stocks for the entire S&P 500 stock index)
+
+To retrieve active S&P 500 stock tickers, make a request to Wikipedia and parse the ticker data.
