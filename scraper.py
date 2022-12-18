@@ -1,55 +1,75 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
-import requests
+import pandas as pd
 
-def get_stock_tickers():
-    # Use requests to retrieve the HTML of the Wikipedia page for the S&P 500 index
-    response = requests.get('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
+class StoreData:
+    _data = []
+    _first_write = True
 
-    # Use BeautifulSoup to parse the HTML and extract the tickers
-    soup = BeautifulSoup(response.text, 'html.parser')
-    table = soup.find('table', {'class': 'wikitable sortable'})
-    tickers = [row.find_all('td')[0].text.strip() for row in table.find_all('tr')[1:]]
+    @staticmethod
+    def get_stock_data(ticker: str):
+        # Set up the webdriver
+        options = webdriver.ChromeOptions()
 
-    print(tickers)
+        # Set up a headless browser to increase performance (a headless browser does not have a GUI but can still run commands)
+        options.add_argument('--headless')
+        driver = webdriver.Chrome(chrome_options=options)
+
+        # Navigate to the website
+        driver.get(f'https://finance.yahoo.com/quote/{ticker}/history?p={ticker}')
+
+        # Wait for the table to be loaded
+        html = driver.page_source
+
+        # Parse the HTML content of the page
+        soup = BeautifulSoup(html, 'html.parser')
+
+        # Find the table containing the stock information
+        table = soup.find(class_='W(100%) M(0)')
+
+        # Find the data you want to extract
+        tbody = table.find('tbody')
+        rows = tbody.find_all('tr')
+
+        # Extract the data from the HTML elements
+        for row in rows:
+            cells = row.find_all('td')
+            if cells:  # Make sure the row contains data
+                date = cells[0].text
+
+                # Check if a closing value exists
+                if len(cells) > 4:
+                    close = cells[4].text
+                    # print(f'{date}: {close}')
+                    StoreData._data.append({"ticker": ticker, "date": date, "close": close})
+                else:
+                    print(f'{date}: No closing value available')
+        print(f'Successfully retrieved stock data for: {ticker}')
+        # Close the web browser
+        driver.close()
+
+    @staticmethod
+    def get_all(tickers: list, file_name: str):
+        for ticker in tickers:
+            try:
+                StoreData.get_stock_data(ticker)
+                StoreData.write_to_csv(file_name)
+            except Exception as e:
+                print(f'Error has occured: {e}')
 
 
-def scrape_stock_data(ticker: str):
-    # Set up the webdriver
-    driver = webdriver.Chrome()
+    @staticmethod
+    def write_to_csv(file_name: str):
+        df = pd.DataFrame(StoreData._data)
+        if StoreData._first_write:
+            df.to_csv(file_name, index=False)
+            StoreData._first_write = False
+        else:
+            df.to_csv(file_name, mode='a', header=False, index=False)
+        print(f'Successfully wrote to: {file_name}')
+        StoreData._data.clear()
 
-    # Navigate to the website
-    driver.get(f'https://finance.yahoo.com/quote/{ticker}/history?p={ticker}')
-
-    # Wait for the table to be loaded
-    html = driver.page_source
-
-    # Parse the HTML content of the page
-    soup = BeautifulSoup(html, 'html.parser')
-
-    # Find the table containing the stock information
-    table = soup.find(class_='W(100%) M(0)')
-
-    # Find the data you want to extract
-    tbody = table.find('tbody')
-    rows = tbody.find_all('tr')
-
-    # Extract the data from the HTML elements
-    for row in rows:
-        cells = row.find_all('td')
-        if cells:  # Make sure the row contains data
-            date = cells[0].text
-
-            # Check if a closing value exists
-            if len(cells) > 4:
-                close = cells[4].text
-                print(f'{date}: {close}')
-            else:
-                print(f'{date}: No closing value available')
-
-    # Close the web browser
-    driver.close()
 
 if __name__ == "__main__":
-    # scrape_stock_data("GOOG")
-    get_stock_tickers()
+    StoreData.get_stock_data("GOOG")
+    print(StoreData._data)
