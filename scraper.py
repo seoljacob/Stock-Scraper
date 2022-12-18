@@ -11,19 +11,15 @@ class StoreData:
         options = webdriver.ChromeOptions()
         options.add_argument('--headless')
         driver = webdriver.Chrome(chrome_options=options)
-
         driver.get(f'https://finance.yahoo.com/quote/{ticker}/history?p={ticker}')
 
         # Wait for the table to be loaded
         html = driver.page_source
-
         soup = BeautifulSoup(html, 'html.parser')
-
         table = soup.find(class_='W(100%) M(0)')
-
         tbody = table.find('tbody')
         rows = tbody.find_all('tr')
-
+        
         for row in rows:
             cells = row.find_all('td')
             if cells:
@@ -36,7 +32,6 @@ class StoreData:
                 else:
                     print(f'{date}: No closing value available')
         print(f'Successfully retrieved stock data for: {ticker}')
-
         driver.close()
 
     @staticmethod
