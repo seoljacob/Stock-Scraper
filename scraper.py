@@ -7,7 +7,6 @@ FILE_PATH = '/Users/jacobseol/Projects/Stock-Scraper/stock_data2.csv'
 
 class StoreData:
     _data = []
-    _first_write = True
 
     @staticmethod
     def get_stock_data(ticker: str):
