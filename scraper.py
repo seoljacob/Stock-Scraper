@@ -8,44 +8,35 @@ class StoreData:
 
     @staticmethod
     def get_stock_data(ticker: str):
-        # Set up the webdriver
         options = webdriver.ChromeOptions()
-
-        # Set up a headless browser to increase performance (a headless browser does not have a GUI but can still run commands)
         options.add_argument('--headless')
         driver = webdriver.Chrome(chrome_options=options)
 
-        # Navigate to the website
         driver.get(f'https://finance.yahoo.com/quote/{ticker}/history?p={ticker}')
 
         # Wait for the table to be loaded
         html = driver.page_source
 
-        # Parse the HTML content of the page
         soup = BeautifulSoup(html, 'html.parser')
 
-        # Find the table containing the stock information
         table = soup.find(class_='W(100%) M(0)')
 
-        # Find the data you want to extract
         tbody = table.find('tbody')
         rows = tbody.find_all('tr')
 
-        # Extract the data from the HTML elements
         for row in rows:
             cells = row.find_all('td')
-            if cells:  # Make sure the row contains data
+            if cells:
                 date = cells[0].text
 
                 # Check if a closing value exists
                 if len(cells) > 4:
                     close = cells[4].text
-                    # print(f'{date}: {close}')
                     StoreData._data.append({"ticker": ticker, "date": date, "close": close})
                 else:
                     print(f'{date}: No closing value available')
         print(f'Successfully retrieved stock data for: {ticker}')
-        # Close the web browser
+
         driver.close()
 
     @staticmethod

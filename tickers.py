@@ -18,10 +18,8 @@ class Tickers:
     
     
     def get_stock_tickers(self):
-        # Use requests to retrieve the HTML of the Wikipedia page for the S&P 500 index
         response = requests.get('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
 
-        # Use BeautifulSoup to parse the HTML and extract the tickers
         soup = BeautifulSoup(response.text, 'html.parser')
         table = soup.find('table', {'class': 'wikitable sortable'})
         self.ticker_list = ([row.find_all('td')[0].text.strip() for row in table.find_all('tr')[1:]])
