@@ -1,6 +1,9 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import pandas as pd
+import os
+
+FILE_PATH = '/Users/jacobseol/Projects/Stock-Scraper/stock_data2.csv'
 
 class StoreData:
     _data = []
@@ -47,11 +50,12 @@ class StoreData:
     @staticmethod
     def write_to_csv(file_name: str):
         df = pd.DataFrame(StoreData._data)
-        if StoreData._first_write:
+        if not os.path.isfile(FILE_PATH):
             df.to_csv(file_name, index=False)
-            StoreData._first_write = False
+            print("File does not exist, writing to new file")
         else:
             df.to_csv(file_name, mode='a', header=False, index=False)
+            print("File exists, appending to existing file")
         print(f'Successfully wrote to: {file_name}')
         StoreData._data.clear()
 
