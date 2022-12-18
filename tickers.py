@@ -31,5 +31,5 @@ if __name__ == "__main__":
     test.get_stock_tickers()
     for ticker in test.ticker_list:
         print(ticker)
-    print(len(test.ticker_list))
+    print(test.ticker_list)
     
